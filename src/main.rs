@@ -16,9 +16,8 @@ use esp_hal::{
 use embassy_executor::Spawner;
 use embassy_time::{Duration, Timer};
 
-use embassy_sync::signal::{Signal};
-// use embassy_sync::blocking_mutex::raw::{NoopRawMutex};
-use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::blocking_mutex::raw::{NoopRawMutex};
+use embassy_sync::mutex::Mutex;
 
 // embassy futures
 // embassy executor
@@ -26,10 +25,15 @@ use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 
 
 #[embassy_executor::task]
-async fn print_count1(signal: &'static Signal<CriticalSectionRawMutex, u32>) {
+async fn print_count1(mutex: &'static Mutex<NoopRawMutex, u32>) {
     loop {
-        let n = signal.wait().await;
-        println!("received: {:?}", n);
+        {
+            let mut counter = mutex.lock().await;
+            *counter = counter.wrapping_add(100);
+            // *counter += 100;
+            println!("counter: {:?}", *counter);
+            Timer::after(Duration::from_millis(200)).await;
+        }
         Timer::after(Duration::from_millis(200)).await;
     }
 }
@@ -43,14 +47,18 @@ async fn main(spawner: Spawner) -> ! {
     let timg0 = esp_hal::timer::TimerGroup::new_async(peripherals.TIMG0, &clocks);
     embassy::init(&clocks, timg0);
 
-    static SIGNAL: StaticCell<Signal<CriticalSectionRawMutex, u32>> = StaticCell::new();
-    let signal = SIGNAL.init(Signal::new());
-    spawner.spawn(print_count1(signal)).unwrap();
+    static MUTEX: StaticCell<Mutex<NoopRawMutex, u32>> = StaticCell::new();
+    let mutex = MUTEX.init(Mutex::new(0));
 
-    let mut counter = 0;
+    spawner.spawn(print_count1(mutex)).unwrap();
+
     loop {
-        signal.signal(counter);
-        counter += 1;
+        {
+            let mut counter = mutex.lock().await;
+            *counter += 1;
+        }
+        // signal.signal(counter);
+        // counter += 1;
         Timer::after(Duration::from_millis(100)).await;
     }
 }
