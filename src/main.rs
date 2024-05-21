@@ -20,6 +20,7 @@ use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 
 // embassy executor
 
+#[derive(Debug)]
 struct Message {
     count: u32,
     id: u32,
@@ -27,6 +28,11 @@ struct Message {
 
 #[embassy_executor::task(pool_size = 10)]
 async fn sending_numbers(id: u32, sender: Sender<'static, NoopRawMutex, Message, 3>) {
+    if id < 10 {
+        let spawner = Spawner::for_current_executor().await;
+        spawner.must_spawn(sending_numbers(id + 10, sender));
+    }
+
     let mut counter = 0;
     loop {
         let message = Message { count: counter, id };
@@ -50,16 +56,12 @@ async fn main(spawner: Spawner) -> ! {
     let sender = channel.sender();
     let receiver = channel.receiver();
 
-    spawner.spawn(sending_numbers(1, sender)).unwrap();
-    spawner.spawn(sending_numbers(2, sender)).unwrap();
-    spawner.spawn(sending_numbers(3, sender)).unwrap();
+    spawner.must_spawn(sending_numbers(1, sender));
+    spawner.must_spawn(sending_numbers(2, sender));
+    spawner.must_spawn(sending_numbers(3, sender));
 
     loop {
-        match receiver.receive().await {
-            Message { count: counter, id: 1 } => println!("first task: {}", counter),
-            Message { count: counter, id: 2 } => println!("second task: {}", counter),
-            Message { count: counter, id: 3 } => println!("third task: {}", counter),
-            _ => panic!("no id"),
-        }
+        let v = receiver.receive().await;
+        println!("received: {:?}", v);
     }
 }
