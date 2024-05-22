@@ -347,6 +347,7 @@ dependencies = [
  "embassy-time-driver",
  "embedded-can",
  "embedded-dma",
+ "embedded-hal 0.2.7",
  "embedded-hal 1.0.0",
  "embedded-hal-async",
  "embedded-hal-nb",
@@ -443,6 +444,7 @@ dependencies = [
  "esp-backtrace",
  "esp-hal",
  "esp-println",
+ "liquidcrystal_i2c-rs",
  "portable-atomic",
  "static_cell",
 ]
@@ -544,6 +546,15 @@ name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
+
+[[package]]
+name = "liquidcrystal_i2c-rs"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "531e09bf909d83142fd22189be3a239e8eea5a2a810c05f0a09f791c1b42b631"
+dependencies = [
+ "embedded-hal 0.2.7",
+]
 
 [[package]]
 name = "litrs"

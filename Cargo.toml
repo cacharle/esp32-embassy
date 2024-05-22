@@ -12,7 +12,8 @@ esp-hal = { version = "0.17.0", features = [
     "embassy-time-timg0",
     "embassy-executor-thread",
     "embassy-executor-interrupt",
-    "embassy-integrated-timers"
+    "embassy-integrated-timers",
+    "embedded-hal-02",
 ] }
 esp-println = { version = "0.9.0", features = ["esp32", "log"] }
 
@@ -24,6 +25,10 @@ embedded-io-async = "0.6.1"
 portable-atomic = "1.6.0"
 static_cell = "2.1.0"
 embassy-futures = "0.1.1"
+
+liquidcrystal_i2c-rs = "0.1.0"
+
+# liquidcrystal_i2c-rs = { git = "https://github.com/guanicoe/LiquidCrystal_I2C-rs", rev = "a1aa87b55ba660e206da07dec0dfb418a9a702d4" }
 
 # embassy-executor   = { version = "0.3.0", features = ["nightly", "integrated-timers", "arch-riscv32", "executor-thread"] }
 # embassy-time   = { version = "0.1.5", features = ["nightly"] }
